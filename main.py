@@ -72,7 +72,7 @@ def classify_and_draft(message):
         model="gpt-5-mini",
         instructions=SYSTEM_PROMPT,
         input=message,
-        max_output_tokens=450,
+        max_output_tokens=1500,
     )
     raw = result.output_text.strip()
     data = json.loads(raw)
