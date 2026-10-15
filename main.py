@@ -22,6 +22,20 @@ BUSINESS_ALLOWED = {v.strip() for v in os.environ.get("BUSINESS_ALLOWED_CHAT_IDS
 WEBHOOK_SECRET = os.environ.get("TELEGRAM_WEBHOOK_SECRET", "").strip()
 MODEL = os.environ.get("OPENAI_MODEL", "gpt-4.1-mini")
 DB_PATH = os.environ.get("DB_PATH", "/tmp/forparty23.db")
+WORK_BUSINESS_OWNER_ID = os.environ.get("WORK_BUSINESS_OWNER_ID", "6454158235").strip()
+WORK_GREETING = (
+    "Здравствуйте! 👋\n\n"
+    "Спасибо за обращение в ForParty23!\n\n"
+    "Чтобы быстрее решить ваш вопрос, свяжитесь напрямую с нашими специалистами:\n\n"
+    "🔹 Аренда оборудования и техническое обеспечение мероприятий\n"
+    "Андрей Стехин — @stekhinandrey\n\n"
+    "🔹 Организация мероприятий под ключ\n"
+    "Валентин — @ValentineGee\n"
+    "Алексей — @vedyshiu_regush_art\n\n"
+    "Напишите специалисту по вашему вопросу — он поможет с консультацией "
+    "и подготовкой предложения.\n\n"
+    "С уважением, команда ForParty23!"
+)
 
 ai = OpenAI(api_key=os.environ["OPENAI_API_KEY"], timeout=30.0, max_retries=1)
 TG_URL = f"https://api.telegram.org/bot{TOKEN}/"
@@ -48,6 +62,8 @@ def init_db():
         conn.execute("""CREATE TABLE IF NOT EXISTS proposals (
             proposal_id TEXT PRIMARY KEY, chat_key TEXT NOT NULL, payload TEXT NOT NULL,
             status TEXT NOT NULL, created INTEGER NOT NULL)""")
+        conn.execute("""CREATE TABLE IF NOT EXISTS work_greetings (
+            chat_key TEXT PRIMARY KEY, sent_at INTEGER NOT NULL)""")
         conn.execute("""CREATE TABLE IF NOT EXISTS processed_updates (
             update_id INTEGER PRIMARY KEY, created INTEGER NOT NULL)""")
 
@@ -241,6 +257,35 @@ def handle_callback(callback):
                                      "reply_markup": {"inline_keyboard": []}})
 
 
+def is_work_business_connection(business_id):
+    """Identify the Business account owner, not the customer's chat ID."""
+    if not business_id:
+        return False
+    connection = tg("getBusinessConnection", {"business_connection_id": business_id})
+    owner_id = str((connection.get("user") or {}).get("id", ""))
+    return bool(WORK_BUSINESS_OWNER_ID) and owner_id == WORK_BUSINESS_OWNER_ID
+
+
+def greet_work_client_once(business_id, chat_id, sender_id):
+    if sender_id == WORK_BUSINESS_OWNER_ID:
+        return
+    key = f"work:{business_id}:{chat_id}"
+    with DB_LOCK, db() as conn:
+        exists = conn.execute("SELECT 1 FROM work_greetings WHERE chat_key=?", (key,)).fetchone()
+        if exists:
+            return
+        # Record before sending so Telegram retries do not repeatedly greet clients.
+        # If sending fails, rollback this record for a later retry.
+        conn.execute("INSERT INTO work_greetings(chat_key,sent_at) VALUES (?,?)", (key, int(time.time())))
+    try:
+        send(chat_id, WORK_GREETING, business_id)
+        logging.info("Work account greeting sent to chat %s", chat_id)
+    except Exception:
+        with DB_LOCK, db() as conn:
+            conn.execute("DELETE FROM work_greetings WHERE chat_key=?", (key,))
+        raise
+
+
 def handle_message(update):
     business = "business_message" in update
     message = update.get("business_message") if business else update.get("message")
@@ -261,6 +306,9 @@ def handle_message(update):
         # The standalone bot remains restricted to explicitly allowed test users.
         return
     business_id = message.get("business_connection_id") if business else None
+    if business and is_work_business_connection(business_id):
+        greet_work_client_once(business_id, chat_id, str((message.get("from") or {}).get("id", "")))
+        return
     key = f"{business_id or 'bot'}:{chat_id}"
     text = message["text"].strip()
     if not text:
