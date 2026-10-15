@@ -253,9 +253,12 @@ def handle_message(update):
     if chat_id == ADMIN_ID:
         return
     if business:
-        if chat_id not in BUSINESS_ALLOWED:
+        # '*' permits any private chat delivered by Telegram Business.
+        # Telegram Business chat exclusions remain in effect.
+        if '*' not in BUSINESS_ALLOWED and chat_id not in BUSINESS_ALLOWED:
             return
     elif chat_id not in BOT_ALLOWED:
+        # The standalone bot remains restricted to explicitly allowed test users.
         return
     business_id = message.get("business_connection_id") if business else None
     key = f"{business_id or 'bot'}:{chat_id}"
