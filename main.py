@@ -327,8 +327,9 @@ def handle_message(update):
         if owner_id == WORK_BUSINESS_OWNER_ID:
             greet_work_once(business_id, chat_id, sender_id)
             return
-        if sender_id == WORK_BUSINESS_OWNER_ID:
-            return
+        # Do NOT filter by WORK_BUSINESS_OWNER_ID in the personal Business connection.
+        # That ID can be a legitimate customer (e.g. ForParty test account).
+        logging.info("Telegram Business message accepted: chat=%s sender=%s owner=%s", chat_id, sender_id, owner_id)
     else:
         if chat_id not in BOT_ALLOWED:
             return
