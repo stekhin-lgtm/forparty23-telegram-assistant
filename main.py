@@ -258,6 +258,7 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT, chat_key TEXT NOT NULL,
             details TEXT NOT NULL, created INTEGER NOT NULL, updated INTEGER NOT NULL)""")
         con.execute("CREATE INDEX IF NOT EXISTS idx_tg_projects_chat ON tg_projects(chat_key)")
+        con.execute("""CREATE TABLE IF NOT EXISTS tg_handoffs (project_id INTEGER PRIMARY KEY, created INTEGER NOT NULL)""")
 
 
 init_db()
@@ -371,6 +372,34 @@ def apply_project(key, data, projects):
                         (json.dumps(merged, ensure_ascii=False), now, target, key))
 
 
+def final_project_reply(key, action, model_project_id, client_text):
+    """Return one deterministic handoff summary when the current project is ready."""
+    if action not in ("new", "update"):
+        return None
+    _, _, projects = load_chat(key)
+    if not projects:
+        return None
+    project = projects[0] if action == "new" else next((p for p in projects if p["id"] == model_project_id), None)
+    if project is None:
+        return None
+    core = all(str(project.get(field, "")).strip() for field in ("event_type", "date", "equipment"))
+    place = bool(project.get("venue") or project.get("city"))
+    explicit = bool(re.search(r"смет|рассчита|посчита|больше ничего|это вс[её]|жду предложени", client_text.casefold()))
+    ready = core and place and (bool(project.get("guests")) or explicit)
+    if not ready:
+        return None
+    with DB_LOCK, db() as con:
+        result = con.execute("INSERT OR IGNORE INTO tg_handoffs(project_id, created) VALUES (?, ?)", (project["id"], int(time.time())))
+        if not result.rowcount:
+            return None
+    details = []
+    for field, name in (("event_type", "Мероприятие"), ("date", "Дата"), ("venue", "Площадка"), ("city", "Город"), ("guests", "Гости"), ("equipment", "Оборудование"), ("notes", "Пожелания")):
+        value = str(project.get(field, "")).strip()
+        if value:
+            details.append(f"• {name}: {value}")
+    return "Информация для расчёта собрана. Андрей видит переписку и сможет подготовить предложение.\\n\\n" + "\\n".join(details)
+
+
 def client_message(message, business_id, owner_id):
     chat_id = str((message.get("chat") or {}).get("id", ""))
     sender_id = str((message.get("from") or {}).get("id", ""))
@@ -431,9 +460,13 @@ def client_message(message, business_id, owner_id):
             history.extend([{"role": "client", "text": text[:1000]}, {"role": "assistant", "text": reply}])
             save_chat(key, history, today)
             return
-        # Send first; if Telegram declines delivery, retry without mutating project state.
-        send(chat_id, reply, business_id)
+        # Persist extracted facts before deciding whether more questions are necessary.
         apply_project(key, data, projects)
+        final_reply = final_project_reply(key, data["project_action"], data["project_id"], text)
+        if final_reply:
+            reply = final_reply
+        # Delivery is checked by send; failed send raises and does not record a reply.
+        send(chat_id, reply, business_id)
         history.extend([{"role": "client", "text": text[:1000]}, {"role": "assistant", "text": reply[:1000]}])
         save_chat(key, history, today)
 
