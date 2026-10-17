@@ -437,13 +437,13 @@ def apply_project(key, data, projects):
     # A hall-only update extends the venue; it must not replace a named venue.
     old_venue = str(existing.get("venue") or "").strip()
     new_venue = str(changes.get("venue") or "").strip()
-    if old_venue and re.match(r"^зал\\b", new_venue, re.I):
+    if old_venue and re.match(r"^зал\b", new_venue, re.I):
         changes["venue"] = old_venue + ", " + new_venue
     # A mistaken city extracted from an existing venue name is not a city.
     if old_venue and str(changes.get("city") or "").casefold() == old_venue.casefold():
         changes["city"] = ""
     # Preserve the month when correcting just the day, e.g. 34 сентября -> 23.
-    if re.fullmatch(r"\\d{1,2}", str(changes.get("date") or "")):
+    if re.fullmatch(r"\d{1,2}", str(changes.get("date") or "")):
         old_date = str(existing.get("date") or "")
         month = re.search(r"(январ[ья]|феврал[ья]|март[а]?|апрел[ья]|ма[йя]|июн[ья]|июл[ья]|август[а]?|сентябр[ья]|октябр[ья]|ноябр[ья]|декабр[ья])", old_date, re.I)
         if month:
