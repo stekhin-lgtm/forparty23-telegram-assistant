@@ -382,7 +382,7 @@ def summary_reply(project):
               ("equipment", "Оборудование"), ("notes", "Пожелания"))
     lines = [f"• {label}: {project[field]}" for field, label in labels if project.get(field)]
     return ("Данные для предварительного расчёта собраны. Андрей видит переписку "
-            "и сможет подготовить предложение.\\n\\n" + "\\n".join(lines))
+            "и сможет подготовить предложение.\n\n" + "\n".join(lines))
 
 
 def handoff_reply(key, projects, text, already_sent):
