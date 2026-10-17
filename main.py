@@ -327,11 +327,26 @@ def save_chat(key, history, greeted_day, paused=0):
             (key, json.dumps(history[-30:], ensure_ascii=False), greeted_day, paused, int(time.time())))
 
 
+def dialogue_guidance(text, history):
+    """Explicitly mark information from the whole visible dialogue as already answered."""
+    client_turns = [item.get("text", "") for item in history if item.get("role") == "client"]
+    client_turns.append(text)
+    complete = " ".join(client_turns).casefold().replace("ё", "е")
+    return {
+        "no_repetition": True,
+        "known_wedding": "свадьб" in complete,
+        "known_guests": bool(re.search(r"\\b\\d{1,4}\\s*(?:гост|чел|человек)", complete)),
+        "known_date": bool(re.search(r"\\b\\d{1,2}\\s+(?:январ|феврал|март|апрел|ма[йя]|июн|июл|август|сентябр|октябр|ноябр|декабр)", complete)),
+        "known_venue": bool(re.search(r"горпарк|загарро|бронзов|д╶вин", complete)),
+    }
+
+
 def make_reply(text, history, projects, first_today):
     context = json.dumps({
         "new_message": text[:2500], "history": history[-20:],
         "existing_projects": projects, "first_contact_today": first_today,
         "today_moscow": datetime.now(TZ).strftime("%Y-%m-%d"),
+        "dialogue_guidance": dialogue_guidance(text, history),
     }, ensure_ascii=False)
     response = ai.responses.create(
         model=MODEL, instructions=PROMPT, input=context,
