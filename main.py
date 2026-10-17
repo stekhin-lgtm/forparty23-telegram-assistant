@@ -194,6 +194,9 @@ PROMPT += (
     + "\\n\\nПРОФЕССИОНАЛЬНЫЕ ЗНАНИЯ STEKHIN AI:\\n" + SHARED_KNOWLEDGE
     + """
 
+НЕ ПЕРЕСПРАШИВАЙ ПОДТВЕРЖДЁННЫЕ ФАКТЫ:
+Если клиент сказал «23 декабря бронзовая лошадь», затем подтвердил «Да, Лофт Бронзовая лошадь Краснодар», считай дату, площадку и город известными. Не спрашивай «Краснодар, верно?» — двигайся дальше: уточни действительно полезную характеристику, предложи подбор Андреем, или заверши сбор заявки. Не повторяй даже вежливыми словами один и тот же вопрос после ответа клиента.
+
 ПРИОРИТЕТ ПЛАТФОРМЫ TELEGRAM BUSINESS:
 Общие правила о необходимости номера телефона для MAX не относятся к Telegram.
 Клиент уже пишет напрямую в личный Telegram Андрея, поэтому этот чат является
@@ -392,6 +395,10 @@ def client_message(message, business_id, owner_id):
         try:
             data = make_reply(text, history, projects, first_today)
             reply = str(data["reply"]).strip()
+            # Avoid confirming Krasnodar again when the customer just named it.
+            if "краснодар" in text.casefold() and "?" in reply and ("краснодар" in reply.casefold() or "город" in reply.casefold()):
+                reply = ("Площадку в Краснодаре учёл. Если известен желаемый размер экрана, "
+                         "напишите его; если нет, Андрей поможет подобрать вариант для презентаций.")
             if first_client_contact:
                 # The introduction is deterministic and not repeated for known clients.
                 # Avoid repeating a model-generated greeting or self-introduction.
