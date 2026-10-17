@@ -11,5 +11,5 @@ jobs:
         with:
           python-version: '3.11'
       - run: pip install -r requirements.txt
-      - run: python -m py_compile main.py test_shared_knowledge.py test_project_flow.py
-      - run: python -m unittest -v test_shared_knowledge.py test_project_flow.py
+      - run: python -m py_compile main.py test_shared_knowledge.py test_project_flow.py test_corrections.py
+      - run: python -m unittest -v test_shared_knowledge.py test_project_flow.py test_corrections.py
