@@ -258,6 +258,7 @@ def init_db():
             id INTEGER PRIMARY KEY AUTOINCREMENT, chat_key TEXT NOT NULL,
             details TEXT NOT NULL, created INTEGER NOT NULL, updated INTEGER NOT NULL)""")
         con.execute("CREATE INDEX IF NOT EXISTS idx_tg_projects_chat ON tg_projects(chat_key)")
+        con.execute("CREATE TABLE IF NOT EXISTS tg_handoffs (project_id INTEGER PRIMARY KEY, created INTEGER NOT NULL)")
 
 
 init_db()
@@ -327,6 +328,78 @@ def save_chat(key, history, greeted_day, paused=0):
             (key, json.dumps(history[-30:], ensure_ascii=False), greeted_day, paused, int(time.time())))
 
 
+ROUTE_SCHEMA = {
+    "type": "object", "additionalProperties": False,
+    "properties": {
+        "action": {"type": "string", "enum": ["none", "new", "update", "clarify"]},
+        "project_id": {"type": "integer"},
+        "changes": {"type": "object", "additionalProperties": False,
+                    "properties": {k: {"type": "string"} for k in FIELDS},
+                    "required": list(FIELDS)},
+    },
+    "required": ["action", "project_id", "changes"],
+}
+
+ROUTE_PROMPT = """Извлекай факты клиента и определяй проект. Только JSON.
+new — явно новое мероприятие; update — продолжение существующего; clarify — неоднозначность;
+none — сообщение без сведений о заказе.
+Учитывай всю доступную переписку и сохранённые проекты. Не смешивай параллельные заказы.
+Для update используй существующий project_id, для new — 0.
+В changes передавай только ДОСТОВЕРНЫЕ новые сведения; пустая строка означает отсутствие новых сведений.
+Не придумывай год, город, телефон, дату, размер оборудования.
+Сведения о количестве гостей важны для звука, но не определяют LED.
+Текст «свадьба в Горпарке» даёт event_type=свадьба и venue=Горпарк.
+Если клиент пишет только число гостей и дату, это дополнение к активному проекту.
+"""
+
+def route_and_extract(text, history, projects):
+    payload = json.dumps({"message": text[:2500], "history": history[-24:],
+                          "projects": projects}, ensure_ascii=False)
+    result = ai.responses.create(
+        model=MODEL, instructions=ROUTE_PROMPT, input=payload,
+        text={"format": {"type": "json_schema", "name": "telegram_project_router",
+                          "schema": ROUTE_SCHEMA, "strict": True}},
+        max_output_tokens=700,
+    )
+    data = json.loads((result.output_text or "").strip())
+    if data["action"] == "update" and data["project_id"] not in {p["id"] for p in projects}:
+        if len(projects) == 1:
+            data["project_id"] = projects[0]["id"]
+        else:
+            data["action"] = "clarify"
+    return {"project_action": data["action"], "project_id": data["project_id"],
+            "changes": data["changes"]}
+
+
+def project_ready(project):
+    return bool(project and project.get("event_type") and project.get("date")
+                and (project.get("venue") or project.get("city")) and project.get("equipment"))
+
+
+def summary_reply(project):
+    labels = (("event_type", "Мероприятие"), ("date", "Дата"),
+              ("venue", "Площадка"), ("city", "Город"), ("guests", "Гостей"),
+              ("equipment", "Оборудование"), ("notes", "Пожелания"))
+    lines = [f"• {label}: {project[field]}" for field, label in labels if project.get(field)]
+    return ("Данные для предварительного расчёта собраны. Андрей видит переписку "
+            "и сможет подготовить предложение.\\n\\n" + "\\n".join(lines))
+
+
+def handoff_reply(key, projects, text, already_sent):
+    if already_sent or not projects:
+        return None, None
+    project = projects[0]
+    if not project_ready(project):
+        return None, None
+    if not (project.get("guests") or re.search(r"смет|рассч|посчита|больше ничего|это все|это всё", text.casefold())):
+        return None, None
+    with DB_LOCK, db() as con:
+        existing = con.execute("SELECT 1 FROM tg_handoffs WHERE project_id=?", (project["id"],)).fetchone()
+    if existing:
+        return None, None
+    return summary_reply(project), project["id"]
+
+
 def make_reply(text, history, projects, first_today):
     context = json.dumps({
         "new_message": text[:2500], "history": history[-20:],
@@ -347,28 +420,25 @@ def make_reply(text, history, projects, first_today):
 def apply_project(key, data, projects):
     action = data["project_action"]
     changes = {k: str(data["changes"].get(k) or "").strip()[:400] for k in FIELDS}
-    if action in ("none", "clarify") or not any(changes.values()):
-        return
+    if action not in ("new", "update") or not any(changes.values()):
+        return None
     now = int(time.time())
     if action == "new":
-        # Only create a record when at least one distinguishing piece of information is known.
         if not any(changes[k] for k in ("event_type", "date", "city", "venue", "equipment")):
-            return
-        new_data = {k: changes[k] for k in FIELDS}
+            return None
         with DB_LOCK, db() as con:
-            con.execute("INSERT INTO tg_projects(chat_key,details,created,updated) VALUES (?,?,?,?)",
-                        (key, json.dumps(new_data, ensure_ascii=False), now, now))
-        return
-    if action == "update":
-        target = data["project_id"]
-        existing = next((p for p in projects if p["id"] == target), None)
-        if existing is None:
-            logging.warning("Declined ambiguous project update: target=%s", target)
-            return
-        merged = {k: changes[k] or existing.get(k, "") for k in FIELDS}
-        with DB_LOCK, db() as con:
-            con.execute("UPDATE tg_projects SET details=?, updated=? WHERE id=? AND chat_key=?",
-                        (json.dumps(merged, ensure_ascii=False), now, target, key))
+            cur = con.execute("INSERT INTO tg_projects(chat_key,details,created,updated) VALUES (?,?,?,?)",
+                              (key, json.dumps(changes, ensure_ascii=False), now, now))
+            return cur.lastrowid
+    target = data["project_id"]
+    existing = next((p for p in projects if p["id"] == target), None)
+    if existing is None:
+        return None
+    merged = {k: changes[k] or existing.get(k, "") for k in FIELDS}
+    with DB_LOCK, db() as con:
+        con.execute("UPDATE tg_projects SET details=?, updated=? WHERE id=? AND chat_key=?",
+                    (json.dumps(merged, ensure_ascii=False), now, target, key))
+    return target
 
 
 def client_message(message, business_id, owner_id):
@@ -412,8 +482,19 @@ def client_message(message, business_id, owner_id):
             save_chat(key, history, today)
             return
         try:
-            data = make_reply(text, history, projects, first_today)
-            reply = str(data["reply"]).strip()
+            routing = route_and_extract(text, history, projects)
+            project_id = apply_project(key, routing, projects)
+            _, _, updated_projects = load_chat(key)
+            target = next((p for p in updated_projects if p["id"] == project_id), None)
+            if target:
+                updated_projects = [target] + [p for p in updated_projects if p["id"] != project_id]
+            final, handoff_id = handoff_reply(key, updated_projects if target else [], text, False)
+            if final:
+                reply = final
+            else:
+                data = make_reply(text, history, updated_projects, first_today)
+                reply = str(data["reply"]).strip()
+                # Project facts are extracted separately; don't trust the reply model to edit projects.
             if first_client_contact:
                 # The introduction is deterministic and not repeated for known clients.
                 # Avoid repeating a model-generated greeting or self-introduction.
@@ -433,7 +514,10 @@ def client_message(message, business_id, owner_id):
             return
         # Send first; if Telegram declines delivery, retry without mutating project state.
         send(chat_id, reply, business_id)
-        apply_project(key, data, projects)
+        if handoff_id:
+            with DB_LOCK, db() as con:
+                con.execute("INSERT OR IGNORE INTO tg_handoffs(project_id,created) VALUES (?,?)",
+                            (handoff_id, int(time.time())))
         history.extend([{"role": "client", "text": text[:1000]}, {"role": "assistant", "text": reply[:1000]}])
         save_chat(key, history, today)
 
