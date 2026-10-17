@@ -337,7 +337,6 @@ def dialogue_guidance(text, history):
         "known_wedding": "свадьб" in complete,
         "known_guests": bool(re.search(r"\\b\\d{1,4}\\s*(?:гост|чел|человек)", complete)),
         "known_date": bool(re.search(r"\\b\\d{1,2}\\s+(?:январ|феврал|март|апрел|ма[йя]|июн|июл|август|сентябр|октябр|ноябр|декабр)", complete)),
-        "known_venue": bool(re.search(r"горпарк|загарро|бронзов|д╶вин", complete)),
     }
 
 
