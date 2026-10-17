@@ -27,6 +27,17 @@ class SharedKnowledgeTests(unittest.TestCase):
         self.assertGreater(main.PROMPT.index("ПРИОРИТЕТ ПЛАТФОРМЫ TELEGRAM BUSINESS"),
                            main.PROMPT.index("ОБЩАЯ БАЗА ПРАВИЛ"))
 
+    def test_wedding_known_facts_across_turns(self):
+        history = [
+            {"role": "client", "text": "На свадьбу в горпарке нужен звук экран и свет"},
+            {"role": "assistant", "text": "Когда дата и сколько гостей?"},
+            {"role": "client", "text": "На свадьбе просто видео и слайдшоу"},
+        ]
+        facts = main.dialogue_guidance("30 чел 22 июля", history)
+        self.assertTrue(facts["known_wedding"])
+        self.assertTrue(facts["known_guests"])
+        self.assertTrue(facts["known_date"])
+
     def test_one_final_summary_and_human_handoff_instruction(self):
         self.assertIn("ОДИН РАЗ в конце сборки заявки", main.PROMPT)
         self.assertIn("Андрей видит эту переписку", main.PROMPT)
