@@ -389,15 +389,14 @@ def final_project_reply(key, action, model_project_id, client_text):
     if not ready:
         return None
     with DB_LOCK, db() as con:
-        result = con.execute("INSERT OR IGNORE INTO tg_handoffs(project_id, created) VALUES (?, ?)", (project["id"], int(time.time())))
-        if not result.rowcount:
+        if con.execute("SELECT 1 FROM tg_handoffs WHERE project_id=?", (project["id"],)).fetchone():
             return None
     details = []
     for field, name in (("event_type", "Мероприятие"), ("date", "Дата"), ("venue", "Площадка"), ("city", "Город"), ("guests", "Гости"), ("equipment", "Оборудование"), ("notes", "Пожелания")):
         value = str(project.get(field, "")).strip()
         if value:
             details.append(f"• {name}: {value}")
-    return "Информация для расчёта собрана. Андрей видит переписку и сможет подготовить предложение.\\n\\n" + "\\n".join(details)
+    return "Информация для расчёта собрана. Андрей видит переписку и сможет подготовить предложение.\n\n" + "\n".join(details)
 
 
 def client_message(message, business_id, owner_id):
@@ -467,6 +466,9 @@ def client_message(message, business_id, owner_id):
             reply = final_reply
         # Delivery is checked by send; failed send raises and does not record a reply.
         send(chat_id, reply, business_id)
+        if final_reply:
+            with DB_LOCK, db() as con:
+                con.execute("INSERT OR IGNORE INTO tg_handoffs(project_id, created) VALUES (?, ?)", (data["project_id"] if data["project_action"] == "update" else load_chat(key)[2][0]["id"], int(time.time())))
         history.extend([{"role": "client", "text": text[:1000]}, {"role": "assistant", "text": reply[:1000]}])
         save_chat(key, history, today)
 
