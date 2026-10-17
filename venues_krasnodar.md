@@ -39,6 +39,58 @@
 | «Лучшее место» | Краснодар, точный адрес уточнить | Лофт, два зала | Адрес и технические условия уточнять | https://chefscatering.ru/catalog/ |
 | LOFT 1979 | Краснодар, точный адрес уточнить | Лофт, несколько залов | Адрес и технические условия уточнять | https://chefscatering.ru/catalog/ |
 
+
+## Дополнительные площадки из открытых каталогов (каталожные данные; наличие и актуальность уточнять)
+
+| Площадка | Адрес по каталогу | Формат | Источник |
+|---|---|---|---|
+| BAZAR | Краснодар, 70-летия Октября, 14/1 | банкетный зал | https://krasnodar.moybanket.ru/catalog/ |
+| Арцах | Краснодар, Почтовая, 211/2 | банкетный зал | https://krasnodar.moybanket.ru/catalog/ |
+| Mer Hall | Краснодар, Индустриальная, 45 | банкетный зал | https://krasnodar.moybanket.ru/catalog/ |
+| Монраше | Краснодар, Зиповская, 5в | банкетный зал | https://krasnodar.moybanket.ru/catalog/ |
+| Rodina южной кухни | Краснодар, Рашпилевская, 106а | ресторан, банкет | https://krasnodar.moybanket.ru/catalog/ |
+| Vinsent на Мира | Краснодар, Мира, 35 | ресторан, банкет | https://krasnodar.moybanket.ru/catalog/ |
+| Восход | Краснодар, Ставропольская, 91 | банкетный зал | https://krasnodar.moybanket.ru/catalog/ |
+| Столица | Краснодар, Василия Мачуги, 62 | бутик-отель, ресторан | https://krasnodar.moybanket.ru/catalog/ |
+| Джентльмены удачи | Краснодар, Тургенева, 139/1 | ресторан, банкет | https://krasnodar.moybanket.ru/catalog/ |
+| Разговоры | Краснодар, Коммунаров, 76 | банкетный зал | https://krasnodar.moybanket.ru/catalog/ |
+| Opera Palace | Краснодар, 1-я Тихая, 29 | банкетный зал | https://krasnodar.moybanket.ru/catalog/ |
+| Сударь | Краснодар, Лизы Чайкиной, 4/3 | банкетный зал | https://krasnodar.moybanket.ru/catalog/ |
+| Villa Verde | Краснодар, Мира, 60 | банкетный зал | https://krasnodar.moybanket.ru/catalog/ |
+| Альянс | Краснодар, Пашковский, Крупской, 2 | банкетный зал | https://krasnodar.moybanket.ru/catalog/ |
+| Старица Карасунская | Краснодар, Трудовой Славы, 6 | банкетный зал | https://krasnodar.moybanket.ru/catalog/restaurant/ |
+| Духанъ | Краснодар, Красная, 15/1 | ресторан, банкет | https://krasnodar.moybanket.ru/catalog/restaurant/ |
+| Версаль | Краснодар, Крупской, 8/5 | банкетный зал | https://krasnodar.moybanket.ru/catalog/restaurant/ |
+| МАСК | Краснодар, Сормовская, 2/7 | банкетный комплекс | https://krasnodar.moybanket.ru/catalog/meeting-room/ |
+| Точка неба | Краснодар, Карасунская, 2 | банкетная площадка | https://krasnodar.moybanket.ru/catalog/meeting-room/ |
+| White Hall | Краснодар, Воровского, 118 | банкетный комплекс | https://krasnodar.moybanket.ru/catalog/meeting-room/ |
+| Янтарь | Краснодар, Василия Мачуги, 101 | банкетный зал | https://krasnodar.moybanket.ru/catalog/meeting-room/ |
+| Екатерининский | Краснодар, Кубанская набережная, 5 | ресторанный комплекс | https://krasnodar.moybanket.ru/catalog/meeting-room/ |
+| Помещик на Красных Партизан | Краснодар, Красных Партизан, 67/1 | банкетный зал | https://krasnodar.moybanket.ru/catalog/300-people/ |
+| Белая береза | Краснодар, Карасунская, 149 | банкетный зал | https://krasnodar.moybanket.ru/catalog/300-people/ |
+| Весенний дворец | Краснодар, 2-й проезд Филатова, 4 | банкетный зал | https://krasnodar.moybanket.ru/catalog/300-people/ |
+| Mari Inn | Краснодар, Димитрова, 15/1 | банкетный зал | https://krasnodar.moybanket.ru/catalog/wedding/ |
+| Ясная поляна | Краснодар, Янковского, 169 | банкетный зал | https://krasnodar.moybanket.ru/catalog/wedding/ |
+| Добро пожаловать | Краснодар, Текстильная, 9Б | банкетный зал | https://krasnodar.moybanket.ru/catalog/wedding/ |
+| Дом русской кухни | Краснодар, Северная, 28 | ресторан, банкет | https://krasnodar.moybanket.ru/catalog/wedding/ |
+| Бастурма | Краснодар, Российская, 72/1 | ресторан, банкет | https://krasnodar.moybanket.ru/catalog/wedding/ |
+| Помещик на Бершанской | Краснодар, Евдокии Бершанской, 70/2 | банкетный зал | https://krasnodar.moybanket.ru/catalog/scene/ |
+| Nebo | Краснодар, Александра Покрышкина, 25/1 | банкетный зал | https://krasnodar.moybanket.ru/catalog/corporate/ |
+| Чин-Чинарём | Краснодар, 9 Мая, 52 | банкетный зал | https://krasnodar.moybanket.ru/catalog/corporate/ |
+| Тропиканка | Краснодар, Трамвайная, 2 | банкетный зал | https://krasnodar.moybanket.ru/catalog/15-people/ |
+| Стефания | Краснодар, Кубанская набережная, 186/1 | банкетный комплекс | https://krasnodar.moybanket.ru/catalog/15-people/ |
+| Сабли-Зубы | Краснодар, Зиповская, 5б | веранда, терраса | https://krasnodar.moybanket.ru/catalog/15-people/ |
+| Српска Кафана на Монтажников | Краснодар, Монтажников, 1 | ресторан | https://krasnodar.moybanket.ru/catalog/3000-rubles/ |
+| Grand City Hall | Краснодар, Красных Партизан, 96 | банкетный зал | https://eventcatalog.ru/area/banketnye_plowadki/krasnodar/ |
+| Континент Хауз | Краснодар, Тополиная аллея, 2/1 | ресторан, банкет | https://eventcatalog.ru/area/banketnye_plowadki/krasnodar/ |
+| Caesar Palace / Florence Hall | Краснодар, Марии Демченко, 112/1 | концертно-банкетный комплекс | https://eventcatalog.ru/area/banketnye_zaly/krasnodar/ |
+| Villa Italy | Краснодар, Зиповская, 5/7 | ресторан, банкет | https://eventcatalog.ru/area/banketnye_zaly/krasnodar/ |
+| Каретный двор | Краснодар, Декабристов, 55 | ресторан, банкет | https://eventcatalog.ru/area/banketnye_zaly/krasnodar/ |
+| Аквамарин | Краснодар, Ставропольская, 336/3 | ресторан, банкет | https://eventcatalog.ru/area/banketnye_zaly/krasnodar/ |
+| Вилок | Краснодар, Бабушкина, 224 | кафе | https://eventcatalog.ru/area/banketnye_plowadki/krasnodar/ |
+
+**Статус:** список не является подтверждением того, что площадки работают сегодня, не содержит инженерных параметров и не исчерпывает все площадки Краснодара. Загородные площадки необходимо учитывать отдельно от города. Бот использует название для распознавания локации, но не подтверждает техническую возможность установки.
+
 ## Для расширения справочника
 - https://krasnodar.arendazala.net/catalog/ — каталог заведений (много карточек, проверять отдельно).
 - https://krasnodar.moybanket.ru/catalog/ — каталог банкетных площадок.
