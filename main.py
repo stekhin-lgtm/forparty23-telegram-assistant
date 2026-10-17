@@ -64,6 +64,19 @@ SCHEMA = {
     "required": ["reply", "project_action", "project_id", "changes"]
 }
 
+def load_shared_knowledge(filename):
+    """Load versioned snapshots; never fetch a private repository at runtime."""
+    path = Path(__file__).resolve().parent / filename
+    try:
+        return path.read_text(encoding="utf-8")
+    except OSError:
+        logging.exception("Shared Stekhin AI file missing: %s", path)
+        return ""
+
+
+SHARED_RULES = load_shared_knowledge("rules.md")
+SHARED_KNOWLEDGE = load_shared_knowledge("knowledge.md")
+
 PROMPT = """Ты — AI-ассистент команды Андрея Стехина. Пишешь клиенту в личном Telegram Business Андрея.
 Андрей видит чат непосредственно в Telegram и может лично продолжить разговор.
 
@@ -173,6 +186,26 @@ project_id=0. Не переносить сведения о покупке в п
 ОТВЕТ
 Верни только JSON по схеме: reply, project_action, project_id, changes.
 """
+
+# Shared customer-safe knowledge: keep Telegram-specific contact and Business
+# controls authoritative whenever shared rules mention MAX-only behavior.
+PROMPT += (
+    "\\n\\nОБЩАЯ БАЗА ПРАВИЛ STEKHIN AI:\\n" + SHARED_RULES
+    + "\\n\\nПРОФЕССИОНАЛЬНЫЕ ЗНАНИЯ STEKHIN AI:\\n" + SHARED_KNOWLEDGE
+    + """
+
+ПРИОРИТЕТ ПЛАТФОРМЫ TELEGRAM BUSINESS:
+Общие правила о необходимости номера телефона для MAX не относятся к Telegram.
+Клиент уже пишет напрямую в личный Telegram Андрея, поэтому этот чат является
+действительным способом связи; не требуй номер телефона для передачи заявки.
+Рабочий Telegram Business ForParty23 остаётся только автоответчиком-переадресацией.
+Приветствие AI формирует программа однократно; не повторяй его в reply.
+Задавай вопросы о неизвестной дате и городе, когда это полезно для расчёта;
+не говори, что площадка не выбрана, если клиент этого не сообщал.
+Не утверждай, что переслал сообщение, создал проект или уведомил менеджера,
+если код не сделал этого. Не выдавай закрытые операции и тарифы клиенту.
+"""
+)
 
 
 def db():
