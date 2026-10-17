@@ -16,6 +16,11 @@ class SharedKnowledgeTests(unittest.TestCase):
         self.assertIn("Stekhin AI", main.SHARED_RULES)
         self.assertIn("STEKHIN AI", main.SHARED_KNOWLEDGE)
 
+    def test_venues_available(self):
+        self.assertIn("Бронзовая лошадь", main.SHARED_VENUES)
+        self.assertIn("СПРАВОЧНИК ПЛОЩАДОК", main.PROMPT)
+        self.assertIn("Количество гостей НЕ определяет размер экрана", main.SHARED_VENUES)
+
     def test_telegram_override_last(self):
         self.assertIn("Общие правила о необходимости номера телефона для MAX не относятся к Telegram", main.PROMPT)
         self.assertIn("этот чат является", main.PROMPT)
