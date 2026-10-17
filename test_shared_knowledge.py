@@ -27,6 +27,12 @@ class SharedKnowledgeTests(unittest.TestCase):
         self.assertGreater(main.PROMPT.index("ПРИОРИТЕТ ПЛАТФОРМЫ TELEGRAM BUSINESS"),
                            main.PROMPT.index("ОБЩАЯ БАЗА ПРАВИЛ"))
 
+    def test_one_final_summary_and_human_handoff_instruction(self):
+        self.assertIn("ОДИН РАЗ в конце сборки заявки", main.PROMPT)
+        self.assertIn("Андрей видит эту переписку", main.PROMPT)
+        self.assertIn("не начинай новый цикл уточнений", main.PROMPT)
+        self.assertIn("не пересказывай заявку повторно", main.PROMPT)
+
     def test_work_business_redirection_is_untouched(self):
         self.assertIn("Валентин", main.WORK_GREETING)
         self.assertIn("Андрей Стехин", main.WORK_GREETING)
