@@ -76,6 +76,7 @@ def load_shared_knowledge(filename):
 
 SHARED_RULES = load_shared_knowledge("rules.md")
 SHARED_KNOWLEDGE = load_shared_knowledge("knowledge.md")
+SHARED_VENUES = load_shared_knowledge("venues_krasnodar.md")
 
 PROMPT = """Ты — AI-ассистент команды Андрея Стехина. Пишешь клиенту в личном Telegram Business Андрея.
 Андрей видит чат непосредственно в Telegram и может лично продолжить разговор.
@@ -192,6 +193,7 @@ project_id=0. Не переносить сведения о покупке в п
 PROMPT += (
     "\\n\\nОБЩАЯ БАЗА ПРАВИЛ STEKHIN AI:\\n" + SHARED_RULES
     + "\\n\\nПРОФЕССИОНАЛЬНЫЕ ЗНАНИЯ STEKHIN AI:\\n" + SHARED_KNOWLEDGE
+    + "\\n\\nСПРАВОЧНИК ПЛОЩАДОК КРАСНОДАРА:\\n" + SHARED_VENUES
     + """
 
 ПРИОРИТЕТ ПЛАТФОРМЫ TELEGRAM BUSINESS:
